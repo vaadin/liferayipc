@@ -395,7 +395,7 @@ Implementation-Vendor: ${addon.vendor}
 			<fileset dir="WebContent" >
 				<patternset>
 					<include name="WEB-INF/**" />
-					<exclude name="WEB-INF/lib" />
+					<exclude name="WEB-INF/lib/**" />
 				</patternset>
 			</fileset>
 		</war>
