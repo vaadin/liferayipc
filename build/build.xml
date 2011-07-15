@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="Vaadin IPC for Liferay" basedir=".." default="all">
+<project name="Vaadin IPC for Liferay" basedir=".." default="all" xmlns:antcontrib="antlib:net.sf.antcontrib">
 
     <!-- Main target that does all -->
-    <target name="all" depends="compile, widgetset, tests, javadoc, package-jar, package-zip, demo.war"/>
+	<!-- widgetset must be compiled in the Liferay installation -->
+    <target name="all" depends="compile, tests, package-zip"/>
 
 	<!-- Build type specific configuration -->
 	<property name="build.properties.file" value="build/build.properties"/>
@@ -129,14 +130,15 @@
 	<target name="compile" depends="init, preprocess-src" unless="run.no-compile">
         <property name="result.classes" value="${result-path}/war/WEB-INF/classes"/>
 
+		<delete dir="${result.classes}" failonerror="false"/>
         <mkdir dir="${result.classes}"/>
         
 		<!-- compile addon -->
 		<javac destdir="${result.classes}" target="1.5" source="1.5" debug="true"> 
 			<src path="${result-path}/src" />
 			<!--<src path="${test.src.base}" />
-			<src path="${demo.src.base}" />
 -->
+			<src path="${demo.src.base}" />
 			<include name="**/*.*" />
 
 			<classpath refid="test.classpath" />
@@ -162,7 +164,7 @@
     <!-- Refresh the project in a locally running Eclipse. -->
 	<target name="refresh-eclipse" if="eclipse.running">
 		<echo>Refreshing project folder</echo>
-		<!--<eclipse.refreshLocal resource="?Test" depth="infinite" />-->
+		<eclipse.refreshLocal resource="${result-path}" depth="infinite" />
 	</target>
 
     <!-- Compile client-side Java -->
@@ -199,7 +201,6 @@
 
 		<touch file="WebContent/VAADIN/widgetsets/.widgetset" verbose="true" />
 
-		<antcall target="refresh-eclipse" />
 	</target>
 
     <!-- ================================================================== -->
@@ -341,7 +342,7 @@
 	</target>		
 
     <!-- Create the ZIP distribution package. -->
-    <target name="package-zip" depends="package-jar, javadoc, manual" unless="run.no-package-jar">
+    <target name="package-zip" depends="package-jar, javadoc, manual, demo.war" unless="run.no-package-jar">
         <property name="zip.name" value="${result-path}/${addon.filename}.zip"/>
 
     	<!-- Make the zip manifest -->
@@ -353,7 +354,7 @@ Implementation-Version: ${version}
 Implementation-Vendor: ${addon.vendor}
        </echo>         
     	        	
-        <echo>Packaging ${result-path}/${jar.name}</echo>
+        <echo>Packaging ${zip.name}</echo>
 
 <!--   		<zipfileset id="manual_fileset" file="${manual.pdf}"/>-->
 
@@ -362,6 +363,9 @@ Implementation-Vendor: ${addon.vendor}
 
             <!-- The add-on library itself -->
             <zipfileset prefix="" file="${result-path}/${jar.name}" />
+        	
+        	<!-- demo war -->
+            <zipfileset prefix="" file="${war.path}" />
 
             <!-- Documentation -->
         	<!--<zipfileset prefix="doc" refid="manual_fileset"/>-->
@@ -375,21 +379,25 @@ Implementation-Vendor: ${addon.vendor}
             </zipfileset>
             <zipfileset file="doc/licensing-${license.short.name}.txt" fullpath="doc/licensing.txt" />
         </zip>
+
     </target>
 
 	<target name="demo.war" depends="javadoc, package-jar" if="demo.src.base">
-        <property name="war.path" value="${result-path}/${addon.name}.war"/>
+        <property name="war.path" value="${result-path}/${addon.filename}-demo.war"/>
 
-		<war destfile="${war.path}" webxml="WebContent/WEB-INF/web.xml">
-			<classes dir="${result.classes}"/>
-			<lib dir="WebContent/WEB-INF/lib" excludes="*src*" />
-			<lib file="${jar.path}" />
-			<fileset dir="WebContent">
+		<antcontrib:propertyregex property="demo.classes.path"
+		              input="${demo.package}"
+		              regexp="\."
+		              replace="/"
+		              casesensitive="false" />
+		<war destfile="${war.path}" needxmlfile="false">
+			<classes dir="${result.classes}" includes="${demo.classes.path}/**"/>
+			<fileset dir="WebContent" >
 				<patternset>
-					<include name="VAADIN/widgetsets/${addon.widgetset}/**/*" />
+					<include name="WEB-INF/**" />
+					<exclude name="WEB-INF/lib" />
 				</patternset>
 			</fileset>
-	        <fileset dir="${javadoc.dir}/../" includes="api/**/*" />
 		</war>
 	</target>
 	

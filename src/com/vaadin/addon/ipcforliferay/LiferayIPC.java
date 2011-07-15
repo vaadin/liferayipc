@@ -1,20 +1,16 @@
 package com.vaadin.addon.ipcforliferay;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
-import com.vaadin.addon.ipcforliferay.LiferayIPC.LiferayIPCEventListener;
+import com.vaadin.addon.ipcforliferay.event.LiferayIPCEvent;
+import com.vaadin.addon.ipcforliferay.event.LiferayIPCEventListener;
 import com.vaadin.addon.ipcforliferay.gwt.client.ui.VLiferayIPC;
-import com.vaadin.event.MouseEvents.ClickEvent;
 import com.vaadin.terminal.PaintException;
 import com.vaadin.terminal.PaintTarget;
-import com.vaadin.tools.ReflectTools;
 import com.vaadin.ui.AbstractComponent;
-import com.vaadin.ui.Component;
 
 /**
  * Server side component for the VLiferayIPC widget.
@@ -22,8 +18,6 @@ import com.vaadin.ui.Component;
 @com.vaadin.ui.ClientWidget(com.vaadin.addon.ipcforliferay.gwt.client.ui.VLiferayIPC.class)
 public class LiferayIPC extends AbstractComponent {
 
-	public static final String VERSION = "@VERSION@";
-	
 	private HashMap<String, List<LiferayIPCEventListener>> eventListeners = new HashMap<String, List<LiferayIPCEventListener>>();
 	private List<String> pendingEventIds = new ArrayList<String>();
 	private List<String> pendingEventData = new ArrayList<String>();
@@ -72,7 +66,7 @@ public class LiferayIPC extends AbstractComponent {
 	public void addListener(String eventId, LiferayIPCEventListener listener) {
 		List<LiferayIPCEventListener> listeners = eventListeners.get(eventId);
 		if (listeners == null) {
-			listeners = new ArrayList<LiferayIPC.LiferayIPCEventListener>();
+			listeners = new ArrayList<LiferayIPCEventListener>();
 			eventListeners.put(eventId, listeners);
 			requestRepaint();
 		}
@@ -95,32 +89,4 @@ public class LiferayIPC extends AbstractComponent {
 		requestRepaint();
 	}
 
-	public interface LiferayIPCEventListener {
-		public static final Method eventReceivedMethod = ReflectTools
-				.findMethod(LiferayIPCEvent.class, "eventReceived",
-						ClickEvent.class);
-
-		public void eventReceived(LiferayIPCEvent event);
-	}
-
-	public static class LiferayIPCEvent extends Component.Event {
-
-		private String eventId;
-		private String data;
-
-		public LiferayIPCEvent(LiferayIPC source, String eventId, String data) {
-			super(source);
-			this.eventId = eventId;
-			this.data = data;
-		}
-
-		public String getEventId() {
-			return eventId;
-		}
-
-		public String getData() {
-			return data;
-		}
-
-	}
 }
