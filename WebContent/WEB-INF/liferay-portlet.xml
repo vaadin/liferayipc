@@ -5,12 +5,10 @@
 	<portlet>
 		<portlet-name>sender</portlet-name>
 		<instanceable>true</instanceable>
-        <ajaxable>true</ajaxable>
 	</portlet>
 	<portlet>
 		<portlet-name>receiver</portlet-name>
 		<instanceable>true</instanceable>
-        <ajaxable>true</ajaxable>
 	</portlet>
 	<role-mapper>
 		<role-name>administrator</role-name>
