@@ -5,7 +5,7 @@ import com.vaadin.ui.Window;
 
 public class SenderApplication extends Application {
 
-	public void init() {
-		setMainWindow(new Window("Sender", new SenderView()));
-	}
+    public void init() {
+        setMainWindow(new Window("Sender", new SenderView()));
+    }
 }
