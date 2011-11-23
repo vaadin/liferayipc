@@ -54,8 +54,9 @@ public class LiferayIPC extends AbstractComponent {
 
     private void fireEvent(String eventId, String data) {
         List<LiferayIPCEventListener> listeners = eventListeners.get(eventId);
-        if (listeners == null)
+        if (listeners == null) {
             return;
+        }
         for (Object o : listeners.toArray()) {
             ((LiferayIPCEventListener) o).eventReceived(new LiferayIPCEvent(
                     this, eventId, data));
@@ -63,6 +64,15 @@ public class LiferayIPC extends AbstractComponent {
 
     }
 
+    /**
+     * Adds a listener for Liferay client-side inter-portlet communication.
+     * Portlets can send messages (strings) to other Vaadin and non-Vaadin
+     * portlets on the same page that listen to the same event ID.
+     * 
+     * @param eventId
+     *            event identifier whose events to listen to
+     * @param listener
+     */
     public void addListener(String eventId, LiferayIPCEventListener listener) {
         List<LiferayIPCEventListener> listeners = eventListeners.get(eventId);
         if (listeners == null) {
@@ -73,19 +83,36 @@ public class LiferayIPC extends AbstractComponent {
         listeners.add(listener);
     }
 
+    /**
+     * Removes a listener for Liferay client-side inter-portlet communication.
+     * 
+     * @param eventId
+     *            event identifier whose events to listen to
+     * @param listener
+     */
     public void removeListener(String eventId, LiferayIPCEventListener listener) {
         List<LiferayIPCEventListener> listeners = eventListeners.get(eventId);
-        if (listeners != null)
+        if (listeners != null) {
             listeners.remove(listener);
+        }
         if (listeners.isEmpty()) {
             requestRepaint();
             eventListeners.remove(eventId);
         }
     }
 
-    public void sendEvent(String eventId, String data) {
+    /**
+     * Sends a message to other portlets on the same page over the Liferay
+     * client-side inter-portlet communication mechanism. All Vaadin and
+     * non-Vaadin portlets on the same page that listen to the same event ID
+     * will receive the message.
+     * 
+     * @param eventId
+     * @param message
+     */
+    public void sendEvent(String eventId, String message) {
         pendingEventIds.add(eventId);
-        pendingEventData.add(data);
+        pendingEventData.add(message);
         requestRepaint();
     }
 
