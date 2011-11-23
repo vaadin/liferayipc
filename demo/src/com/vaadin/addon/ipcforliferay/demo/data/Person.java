@@ -1,6 +1,8 @@
 package com.vaadin.addon.ipcforliferay.demo.data;
 
-public class Person {
+import java.io.Serializable;
+
+public class Person implements Serializable {
 
     private String firstName;
     private String lastName;

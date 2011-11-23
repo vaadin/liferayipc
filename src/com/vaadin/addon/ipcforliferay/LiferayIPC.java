@@ -1,5 +1,6 @@
 package com.vaadin.addon.ipcforliferay;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,7 +17,7 @@ import com.vaadin.ui.AbstractComponent;
  * Server side component for the VLiferayIPC widget.
  */
 @com.vaadin.ui.ClientWidget(com.vaadin.addon.ipcforliferay.gwt.client.ui.VLiferayIPC.class)
-public class LiferayIPC extends AbstractComponent {
+public class LiferayIPC extends AbstractComponent implements Serializable {
 
     private HashMap<String, List<LiferayIPCEventListener>> eventListeners = new HashMap<String, List<LiferayIPCEventListener>>();
     private List<String> pendingEventIds = new ArrayList<String>();

@@ -1,5 +1,6 @@
 package com.vaadin.addon.ipcforliferay.event;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 
 import com.vaadin.addon.ipcforliferay.LiferayIPC;
@@ -13,7 +14,7 @@ import com.vaadin.tools.ReflectTools;
  * 
  * @see LiferayIPC
  */
-public interface LiferayIPCEventListener {
+public interface LiferayIPCEventListener extends Serializable {
     /**
      * Internal listener management related field - do not use directly.
      */
