@@ -1,8 +1,11 @@
 package com.vaadin.addon.ipcforliferay.gwt.client.ui;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Overflow;
@@ -11,6 +14,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.vaadin.terminal.gwt.client.ApplicationConnection;
 import com.vaadin.terminal.gwt.client.Paintable;
 import com.vaadin.terminal.gwt.client.UIDL;
+import com.vaadin.terminal.gwt.client.VConsole;
 
 public class VLiferayIPC extends Widget implements Paintable {
 
@@ -30,7 +34,11 @@ public class VLiferayIPC extends Widget implements Paintable {
     /** Reference to the server connection object. */
     protected ApplicationConnection client;
 
-    private Set<String> eventIds = new HashSet<String>();
+    /**
+     * Map from a currently registered event ID to the JavaScript function
+     * object registered for it.
+     */
+    private Map<String, JavaScriptObject> eventListeners = new HashMap<String, JavaScriptObject>();
 
     /**
      * The constructor should first call super() to initialize the component and
@@ -49,17 +57,30 @@ public class VLiferayIPC extends Widget implements Paintable {
      */
     public void updateFromUIDL(UIDL uidl, ApplicationConnection client) {
         this.client = client;
-        if (uidl.hasAttribute("cached"))
+        if (uidl.hasAttribute("cached")) {
             return;
+        }
 
         paintableId = uidl.getId();
 
+        // prepare to unregister events not listed by the server
+        Set<String> eventIdsToUnregister = new HashSet<String>(
+                eventListeners.keySet());
+
         for (String eventId : uidl
                 .getStringArrayAttribute(ATTR_EVENT_IDS_TO_LISTEN_FOR)) {
-            if (!this.eventIds.contains(eventId)) {
-                this.eventIds.add(eventId);
-                registerListener(eventId);
+            if (!eventListeners.containsKey(eventId)) {
+                JavaScriptObject listener = registerListener(eventId);
+                eventListeners.put(eventId, listener);
             }
+            // do not unregister event id if server tells still in use
+            eventIdsToUnregister.remove(eventId);
+        }
+
+        // unregister event IDs not listed by the server
+        for (String eventId : eventIdsToUnregister) {
+            unregisterListener(eventId, eventListeners.get(eventId));
+            eventListeners.remove(eventId);
         }
 
         if (uidl.hasAttribute(ATTR_TRIGGER_EVENT_IDS)) {
@@ -76,28 +97,43 @@ public class VLiferayIPC extends Widget implements Paintable {
 
     private native void triggerEvent(String eventId, Object data)
     /*-{
-    $wnd.Liferay.fire(eventId,data);
+        $wnd.Liferay.fire(eventId,data);
     }-*/;
 
+    /**
+     * Listener method called by the Liferay javascript API when a client side
+     * IPC event is received. Notifies the server of the event with the related
+     * data.
+     * 
+     * @param eventId
+     * @param data
+     */
     public void receivedEvent(String eventId, String data) {
-        if (eventIds.contains(eventId)) {
+        if (eventListeners.containsKey(eventId)) {
             client.updateVariable(paintableId, VARIABLE_EVENT_ID, eventId,
                     false);
             client.updateVariable(paintableId, VARIABLE_EVENT_DATA, data, true);
+        } else {
+            VConsole.log("Unexpected client-side IPC message for event id "
+                    + eventId);
         }
     }
 
-    private native void unregisterListener(String eventId)
+    private native void unregisterListener(String eventId,
+            JavaScriptObject listener)
     /*-{
-    //TODO
+        var instance = this;
+        $wnd.Liferay.detach(eventId, listener);
     }-*/;
 
-    private native void registerListener(String eventId)
+    private native JavaScriptObject registerListener(String eventId)
     /*-{
-    var instance = this;
-    $wnd.Liferay.on(eventId,function(event,data) {
-    	instance.@com.vaadin.addon.ipcforliferay.gwt.client.ui.VLiferayIPC::receivedEvent(Ljava/lang/String;Ljava/lang/String;)(eventId,data.toString());
-    });
+        var instance = this;
+        var listener = function(event,data) {
+            instance.@com.vaadin.addon.ipcforliferay.gwt.client.ui.VLiferayIPC::receivedEvent(Ljava/lang/String;Ljava/lang/String;)(eventId,data.toString());
+        };
+        $wnd.Liferay.on(eventId,listener);
+        return listener;
     }-*/;
 
 }
