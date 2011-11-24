@@ -22,8 +22,8 @@
 			<portlet-mode>VIEW</portlet-mode>
 		</supports>
 		<portlet-info>
-			<title>Vaadin IPC for Liferay demo - Sender</title>
-			<short-title>Sender</short-title>
+			<title>Vaadin IPC for Liferay demo - Vaadin Sender</title>
+			<short-title>Vaadin Sender</short-title>
 			<keywords></keywords>
 		</portlet-info>
 		<security-role-ref>
@@ -57,8 +57,8 @@
 			<portlet-mode>VIEW</portlet-mode>
 		</supports>
 		<portlet-info>
-			<title>Vaadin IPC for Liferay demo - Receiver</title>
-			<short-title>Receiver</short-title>
+			<title>Vaadin IPC for Liferay demo - Vaadin Receiver</title>
+			<short-title>Vaadin Receiver</short-title>
 			<keywords></keywords>
 		</portlet-info>
 		<security-role-ref>
@@ -74,4 +74,66 @@
 			<role-name>user</role-name>
 		</security-role-ref>
 	</portlet>
+    <portlet>
+        <portlet-name>jsp-sender</portlet-name>
+        <display-name>Vaadin IPC for Liferay demo - JSP Sender</display-name>
+        <portlet-class>com.liferay.util.bridges.mvc.MVCPortlet</portlet-class>
+        <init-param>
+            <name>view-jsp</name>
+            <value>/ipcsend.jsp</value>
+        </init-param>
+        <expiration-cache>0</expiration-cache>
+        <supports>
+            <mime-type>text/html</mime-type>
+            <portlet-mode>VIEW</portlet-mode>
+        </supports>
+        <portlet-info>
+            <title>Vaadin IPC for Liferay demo - JSP Sender</title>
+            <short-title>JSP Sender</short-title>
+            <keywords></keywords>
+        </portlet-info>
+        <security-role-ref>
+            <role-name>administrator</role-name>
+        </security-role-ref>
+        <security-role-ref>
+            <role-name>guest</role-name>
+        </security-role-ref>
+        <security-role-ref>
+            <role-name>power-user</role-name>
+        </security-role-ref>
+        <security-role-ref>
+            <role-name>user</role-name>
+        </security-role-ref>
+    </portlet>
+    <portlet>
+        <portlet-name>jsp-receiver</portlet-name>
+        <display-name>Vaadin IPC for Liferay demo - JSP Receiver</display-name>
+        <portlet-class>com.liferay.util.bridges.mvc.MVCPortlet</portlet-class>
+        <init-param>
+            <name>view-jsp</name>
+            <value>/ipcreceive.jsp</value>
+        </init-param>
+        <expiration-cache>0</expiration-cache>
+        <supports>
+            <mime-type>text/html</mime-type>
+            <portlet-mode>VIEW</portlet-mode>
+        </supports>
+        <portlet-info>
+            <title>Vaadin IPC for Liferay demo - JSP Receiver</title>
+            <short-title>JSP Receiver</short-title>
+            <keywords></keywords>
+        </portlet-info>
+        <security-role-ref>
+            <role-name>administrator</role-name>
+        </security-role-ref>
+        <security-role-ref>
+            <role-name>guest</role-name>
+        </security-role-ref>
+        <security-role-ref>
+            <role-name>power-user</role-name>
+        </security-role-ref>
+        <security-role-ref>
+            <role-name>user</role-name>
+        </security-role-ref>
+    </portlet>
 </portlet-app>

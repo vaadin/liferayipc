@@ -10,6 +10,14 @@
 		<portlet-name>receiver</portlet-name>
 		<instanceable>true</instanceable>
 	</portlet>
+    <portlet>
+        <portlet-name>jsp-sender</portlet-name>
+        <instanceable>false</instanceable>
+    </portlet>
+    <portlet>
+        <portlet-name>jsp-receiver</portlet-name>
+        <instanceable>true</instanceable>
+    </portlet>
 	<role-mapper>
 		<role-name>administrator</role-name>
 		<role-link>Administrator</role-link>

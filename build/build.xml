@@ -394,6 +394,7 @@ Implementation-Vendor: ${addon.vendor}
 			<classes dir="${result.classes}" includes="${demo.classes.path}/**"/>
 			<fileset dir="WebContent" >
 				<patternset>
+					<include name="*.jsp" />
 					<include name="WEB-INF/**" />
 					<exclude name="WEB-INF/lib/**" />
 				</patternset>
