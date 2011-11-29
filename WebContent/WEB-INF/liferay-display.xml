@@ -5,6 +5,7 @@
 	<category name="Vaadin">
 		<portlet id="sender"></portlet>
 		<portlet id="receiver"></portlet>
+        <portlet id="sessionreceiver"></portlet>
         <portlet id="jsp-sender"></portlet>
         <portlet id="jsp-receiver"></portlet>
 	</category>

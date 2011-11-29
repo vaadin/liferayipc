@@ -385,8 +385,10 @@ Implementation-Vendor: ${addon.vendor}
 	<target name="demo.war" depends="javadoc, package-jar" if="demo.src.base">
         <property name="war.path" value="${result-path}/${addon.filename}-demo.war"/>
 
+		<!-- Additional package with the Base64 encoder/decoder -->
+		<property name="demo.packages" value="${demo.package},biz.source_code.base64Coder"/>
 		<antcontrib:propertyregex property="demo.classes.path"
-		              input="${demo.package}"
+		              input="${demo.packages}"
 		              regexp="\."
 		              replace="/"
 		              casesensitive="false" />

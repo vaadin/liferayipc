@@ -75,6 +75,41 @@
 		</security-role-ref>
 	</portlet>
     <portlet>
+        <portlet-name>sessionreceiver</portlet-name>
+        <display-name>Vaadin IPC for Liferay demo - Shared Session Receiver</display-name>
+        <portlet-class>
+            com.vaadin.terminal.gwt.server.ApplicationPortlet2
+        </portlet-class>
+        <init-param>
+            <name>application</name>
+            <value>
+                com.vaadin.addon.ipcforliferay.demo.sessionreceiver.SessionReceiverApplication
+            </value>
+        </init-param>
+        <expiration-cache>0</expiration-cache>
+        <supports>
+            <mime-type>text/html</mime-type>
+            <portlet-mode>VIEW</portlet-mode>
+        </supports>
+        <portlet-info>
+            <title>Vaadin IPC for Liferay demo - Vaadin Shared Session Receiver</title>
+            <short-title>Vaadin Shared Session Receiver</short-title>
+            <keywords></keywords>
+        </portlet-info>
+        <security-role-ref>
+            <role-name>administrator</role-name>
+        </security-role-ref>
+        <security-role-ref>
+            <role-name>guest</role-name>
+        </security-role-ref>
+        <security-role-ref>
+            <role-name>power-user</role-name>
+        </security-role-ref>
+        <security-role-ref>
+            <role-name>user</role-name>
+        </security-role-ref>
+    </portlet>
+    <portlet>
         <portlet-name>jsp-sender</portlet-name>
         <display-name>Vaadin IPC for Liferay demo - JSP Sender</display-name>
         <portlet-class>com.liferay.util.bridges.mvc.MVCPortlet</portlet-class>

@@ -5,11 +5,20 @@
 	<portlet>
 		<portlet-name>sender</portlet-name>
 		<instanceable>true</instanceable>
+        <!-- Necessary for the sender if communicating between portlets in different WARs. -->
+        <!-- If communicating between portlets in the same WAR, both portlets should use the same value. -->
+        <private-session-attributes>false</private-session-attributes>
 	</portlet>
 	<portlet>
 		<portlet-name>receiver</portlet-name>
 		<instanceable>true</instanceable>
 	</portlet>
+    <portlet>
+        <portlet-name>sessionreceiver</portlet-name>
+        <instanceable>true</instanceable>
+        <!-- Needed also at the receiving end if communicating between portlets in the same WAR. -->
+        <private-session-attributes>false</private-session-attributes>
+    </portlet>
     <portlet>
         <portlet-name>jsp-sender</portlet-name>
         <instanceable>false</instanceable>
