@@ -16,7 +16,9 @@ import com.vaadin.ui.Table;
 
 /**
  * Demo view that receives Liferay client side inter-portlet messages (from
- * SenderView) and displays their contents in a table.
+ * SenderView) and displays their contents in a table. This portlet reads the
+ * actual content of the message from (shared) portlet session attributes
+ * identified by the key given in the client-side message.
  */
 public class SessionReceiverView extends CustomComponent {
 
@@ -62,12 +64,13 @@ public class SessionReceiverView extends CustomComponent {
                         // Note that between portlets in the same WAR, the
                         // object could also be passed directly without
                         // serializing it.
+                        String key = event.getData();
                         Person person;
                         try {
                             person = (Person) getApplication()
                                     .getSessionAttribute(
-                                            "LIFERAY_SHARED_vaadin_person",
-                                            TransferMode.BASE64);
+                                            "LIFERAY_SHARED_vaadin_person_"
+                                                    + key, TransferMode.BASE64);
                         } catch (IOException e) {
                             getWindow()
                                     .showNotification(

@@ -1,6 +1,7 @@
 package com.vaadin.addon.ipcforliferay.demo.sender;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import com.vaadin.addon.ipcforliferay.LiferayIPC;
 import com.vaadin.addon.ipcforliferay.demo.SessionAwarePortletApplication;
@@ -17,11 +18,13 @@ import com.vaadin.ui.TextField;
  * Demo form that supports sending Liferay client side inter-portlet messages to
  * other portlets on the same page.
  * 
- * This portlet sends the message in two different ways at the same time: as a
+ * Note that this portlet sends the message in two different ways at the same
+ * time to demonstrate different ways to communicate complex data: as a
  * semicolon separated string via the client with the event id "newPerson", and
- * as a Person object in a shared portlet session with just a notification of
- * its availability sent via the client with the event id "newPersonInSession"
- * and no content.
+ * as a Person object in a shared portlet session with just a an internal
+ * identifier for it sent via the client with the event id "newPersonInSession".
+ * 
+ * Normal applications only need one of these approaches.
  */
 public class SenderView extends CustomComponent {
 
@@ -59,6 +62,11 @@ public class SenderView extends CustomComponent {
                 String lastName = (String) lastNameField.getValue();
                 int age = Integer.parseInt((String) ageField.getValue());
 
+                // Note: this portlet sends the same data in two different ways
+                // for different receivers. Normally, only one approach would be
+                // used in a portlet, and all receivers would listen to the same
+                // channel.
+
                 // simple way of sending all the data via the client
                 sendPersonViaClient(firstName, lastName, age);
 
@@ -94,12 +102,8 @@ public class SenderView extends CustomComponent {
      * attributes (private-session-attributes must be false in
      * liferay-portlet.xml).
      * 
-     * Note that this simple implementation does not handle multiple concurrent
-     * senders with different data in each. That can be handled e.g. by
-     * providing a suitable identifier for the shared data in the message passed
-     * on the client as long as security implications are kept in mind (a
-     * malicious client can alter messages and try to e.g. scan for possible
-     * keys).
+     * Note that this simple implementation does not clean up attributes added
+     * to the session.
      * 
      * @param firstName
      * @param lastName
@@ -108,14 +112,17 @@ public class SenderView extends CustomComponent {
     private void sendPersonViaSession(String firstName, String lastName, int age) {
         Person person = new Person(firstName, lastName, age);
 
+        // generate a random key for the data to transfer
+        String key = UUID.randomUUID().toString();
+
         // Put the person object in the session.
         // Note that between portlets in the same WAR, the
         // object could also be passed directly without
         // serializing it.
         try {
-            getApplication()
-                    .setSessionAttribute("LIFERAY_SHARED_vaadin_person",
-                            person, TransferMode.BASE64);
+            getApplication().setSessionAttribute(
+                    "LIFERAY_SHARED_vaadin_person_" + key, person,
+                    TransferMode.BASE64);
         } catch (IOException e) {
             getWindow().showNotification(
                     "Storing a person in the portlet session failed");
@@ -123,9 +130,10 @@ public class SenderView extends CustomComponent {
         }
 
         // This only notifies listeners that a Person object has been
-        // put or updated in the shared session, with no data in the message in
-        // this simple implementation.
-        liferayIPC_1.sendEvent("newPersonInSession", "");
+        // put or updated in the shared session. The message sent via the client
+        // only contains an identifier with which the receiving portlets can
+        // retrieve the data from the session.
+        liferayIPC_1.sendEvent("newPersonInSession", key);
     }
 
     @Override
