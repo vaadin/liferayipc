@@ -385,15 +385,22 @@ Implementation-Vendor: ${addon.vendor}
 	<target name="demo.war" depends="javadoc, package-jar" if="demo.src.base">
         <property name="war.path" value="${result-path}/${addon.filename}-demo.war"/>
 
+        <echo>Building WAR</echo>
+        <echo>WAR Target Path: ${war.path}</echo>
+
 		<!-- Additional package with the Base64 encoder/decoder -->
-		<property name="demo.packages" value="${demo.package},biz.source_code.base64Coder"/>
+        <!-- Please notice the use of include pattern -->
+		<property name="demo.packages" value="${demo.package}/**,biz.source_code.base64Coder/**"/>
+        <echo>Demo packages path: ${demo.packages}</echo>
 		<antcontrib:propertyregex property="demo.classes.path"
 		              input="${demo.packages}"
 		              regexp="\."
 		              replace="/"
 		              casesensitive="false" />
+        <echo>Included class path: ${demo.classes.path}</echo>
+
 		<war destfile="${war.path}" needxmlfile="false">
-			<classes dir="${result.classes}" includes="${demo.classes.path}/**"/>
+			<classes dir="${result.classes}" includes="${demo.classes.path}"/>
 			<fileset dir="WebContent" >
 				<patternset>
 					<include name="*.jsp" />
