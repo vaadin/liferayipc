@@ -1,55 +1,39 @@
 package com.vaadin.addon.ipcforliferay;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.vaadin.addon.ipcforliferay.event.LiferayIPCEvent;
 import com.vaadin.addon.ipcforliferay.event.LiferayIPCEventListener;
-import com.vaadin.addon.ipcforliferay.gwt.client.ui.VLiferayIPC;
-import com.vaadin.terminal.PaintException;
-import com.vaadin.terminal.PaintTarget;
-import com.vaadin.ui.AbstractComponent;
+import com.vaadin.addon.ipcforliferay.shared.LiferayIPCRpc;
+import com.vaadin.addon.ipcforliferay.shared.LiferayIPCState;
+import com.vaadin.annotations.JavaScript;
+import com.vaadin.server.AbstractJavaScriptExtension;
+import com.vaadin.ui.UI;
 
 /**
- * Server side component for the VLiferayIPC widget.
+ * Enables inter portlet communication using Liferay communication API.
+ * 
+ * @author Vaadin Ltd
+ * @version @VERSION@
+ * @since 7.0
+ * 
  */
-@com.vaadin.ui.ClientWidget(com.vaadin.addon.ipcforliferay.gwt.client.ui.VLiferayIPC.class)
-public class LiferayIPC extends AbstractComponent implements Serializable {
+@JavaScript("LiferayIPCConnector.js")
+public class LiferayIPC extends AbstractJavaScriptExtension {
 
     private HashMap<String, List<LiferayIPCEventListener>> eventListeners = new HashMap<String, List<LiferayIPCEventListener>>();
-    private List<String> pendingEventIds = new ArrayList<String>();
-    private List<String> pendingEventData = new ArrayList<String>();
 
-    @Override
-    public void paintContent(PaintTarget target) throws PaintException {
-        super.paintContent(target);
-        target.addAttribute(VLiferayIPC.ATTR_EVENT_IDS_TO_LISTEN_FOR,
-                eventListeners.keySet().toArray());
-        if (!pendingEventIds.isEmpty()) {
-            target.addAttribute(VLiferayIPC.ATTR_TRIGGER_EVENT_IDS,
-                    pendingEventIds.toArray());
-            target.addAttribute(VLiferayIPC.ATTR_TRIGGER_EVENT_DATA,
-                    pendingEventData.toArray());
-            pendingEventIds.clear();
-            pendingEventData.clear();
-        }
-    }
+    public LiferayIPC() {
+        registerRpc(new LiferayIPCRpc() {
 
-    /**
-     * Receive and handle events and other variable changes from the client.
-     * 
-     * {@inheritDoc}
-     */
-    @Override
-    public void changeVariables(Object source, Map<String, Object> variables) {
-        super.changeVariables(source, variables);
-        if (variables.containsKey(VLiferayIPC.VARIABLE_EVENT_ID)) {
-            fireEvent((String) variables.get(VLiferayIPC.VARIABLE_EVENT_ID),
-                    (String) variables.get(VLiferayIPC.VARIABLE_EVENT_DATA));
-        }
+            @Override
+            public void sendEvent(String eventId, String message) {
+                fireEvent(eventId, message);
+            }
+
+        });
 
     }
 
@@ -79,9 +63,14 @@ public class LiferayIPC extends AbstractComponent implements Serializable {
         if (listeners == null) {
             listeners = new ArrayList<LiferayIPCEventListener>();
             eventListeners.put(eventId, listeners);
-            requestRepaint();
+            getState().eventIdsListenedTo.add(eventId);
         }
         listeners.add(listener);
+    }
+
+    @Override
+    protected LiferayIPCState getState() {
+        return (LiferayIPCState) super.getState();
     }
 
     /**
@@ -95,10 +84,9 @@ public class LiferayIPC extends AbstractComponent implements Serializable {
         List<LiferayIPCEventListener> listeners = eventListeners.get(eventId);
         if (listeners != null) {
             listeners.remove(listener);
-        }
-        if (listeners.isEmpty()) {
-            requestRepaint();
-            eventListeners.remove(eventId);
+            if (listeners.isEmpty()) {
+                getState().eventIdsListenedTo.remove(eventId);
+            }
         }
     }
 
@@ -112,9 +100,17 @@ public class LiferayIPC extends AbstractComponent implements Serializable {
      * @param message
      */
     public void sendEvent(String eventId, String message) {
-        pendingEventIds.add(eventId);
-        pendingEventData.add(message);
-        requestRepaint();
+        getRpcProxy(LiferayIPCRpc.class).sendEvent(eventId, message);
     }
 
+    /**
+     * Attach this extension to the given UI. Required to be able to send and
+     * receive events.
+     * 
+     * @param target
+     *            The UI to attach to
+     */
+    public void extend(UI target) {
+        super.extend(target);
+    }
 }

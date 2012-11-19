@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 
 import com.vaadin.addon.ipcforliferay.LiferayIPC;
-import com.vaadin.tools.ReflectTools;
+import com.vaadin.util.ReflectTools;
 
 /**
  * Listener interface of receiving messages sent using the Liferay client-side

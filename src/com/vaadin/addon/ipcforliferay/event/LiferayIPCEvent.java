@@ -1,7 +1,8 @@
 package com.vaadin.addon.ipcforliferay.event;
 
+import java.util.EventObject;
+
 import com.vaadin.addon.ipcforliferay.LiferayIPC;
-import com.vaadin.ui.Component.Event;
 
 /**
  * Event class for messages sent using the Liferay client-side inter-portlet
@@ -16,7 +17,7 @@ import com.vaadin.ui.Component.Event;
  * 
  * @see LiferayIPC
  */
-public class LiferayIPCEvent extends Event {
+public class LiferayIPCEvent extends EventObject {
 
     private String eventId;
     private String data;

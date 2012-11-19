@@ -1,148 +1,111 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="Vaadin IPC for Liferay" basedir=".." default="all" xmlns:antcontrib="antlib:net.sf.antcontrib">
+<project name="Vaadin IPC for Liferay" basedir=".." default="all" xmlns:antcontrib="antlib:net.sf.antcontrib" xmlns:ivy="antlib:org.apache.ivy.ant">
 
-    <!-- Main target that does all -->
-	<!-- widgetset must be compiled in the Liferay installation -->
-    <target name="all" depends="compile, tests, package-zip"/>
+	<!-- Main target that does all -->
+	<target name="all" depends="compile, tests, package-zip" />
 
 	<!-- Build type specific configuration -->
-	<property name="build.properties.file" value="build/build.properties"/>
-    <echo>Using build type specfic property file: "${build.properties.file}"</echo>
-    <property file="${build.properties.file}" />
+	<property name="build.properties.file" value="build/build.properties" />
+	<echo>Using build type specfic property file: "${build.properties.file}"</echo>
+	<property file="${build.properties.file}" />
 
-    <!-- If not already set by the build system -->
-    <property name="version" value="${addon.version}" />
+	<!-- If not already set by the build system -->
+	<property name="version" value="${addon.version}" />
 
 	<property name="configure.libs" value="" />
 	<property name="module.junit.dir" value="${basedir}/build/result/unittests" />
 
 	<property name="addon.filename" value="${addon.name}-${version}" />
-    <!-- ================================================================== -->
-    <!-- Initialization                                                     -->
-    <!-- ================================================================== -->
+	<!-- ================================================================== -->
+	<!-- Initialization                                                     -->
+	<!-- ================================================================== -->
 
-    <!-- Clean old compilation results. -->
+	<!-- Clean old compilation results. -->
 	<target name="clean-all">
-		<delete dir="${result-path}" includes="**/*" followsymlinks="false" includeemptydirs="true" defaultexcludes="false" failonerror="false"/>
+		<delete dir="${result-path}" includes="**/*" followsymlinks="false" includeemptydirs="true" defaultexcludes="false" failonerror="false" />
 	</target>
 
-    <!-- Checks that all the required libraries exist. -->
-	<target name="check-libs">
-		<available file="${gwt.lib.dir}/gwt-user.jar" property="gwt-user.present" />
-		<available file="${gwt.lib.dir}/gwt-dev.jar" property="gwt-dev.present" />
-
-		<fail message="${gwt.lib.dir}/gwt-user.jar missing" unless="gwt-user.present" />
-		<fail message="${gwt.lib.dir}/gwt-dev.jar missing" unless="gwt-dev.present" />
-	</target>
-
-    <!-- Initialization -->
+	<!-- Initialization -->
 	<target name="init">
-	    <echo>Add-on version: "${version}"</echo>
+		<echo>Add-on version: "${version}"</echo>
 
-		<echo>Requirements for classpath:</echo>
-		<echo> ${gwt.lib.dir}/gwt-user.jar</echo>
-		<echo> ${gwt.lib.dir}/gwt-dev.jar</echo>
+		<ivy:resolve />
+		<ivy:cachepath pathid="compile.classpath" conf="default" />
+		<ivy:cachepath pathid="test.classpath" conf="test" />
+		<property name="base-name" value="${addon.filename}" />
+		<property name="jar.name" value="${base-name}.jar" />
+		<property name="jar.path" value="${result-path}/${jar.name}" />
 
-        <property name="base-name" value="${addon.filename}" />
-        <property name="jar.name" value="${base-name}.jar"/>
-        <property name="jar.path" value="${result-path}/${jar.name}"/>
-
-		<antcall target="check-libs"/>
-
-        <path id="test.classpath">
-            <fileset dir="build/lib">
-                <include name="**/*.jar" />
-            </fileset>
-            
-            <fileset dir="WebContent/WEB-INF/lib">
-                <include name="**/*.jar" />
-            </fileset>
-
-            <fileset dir="build/lib">
-                <include name="junit-4.5.jar" />
-            </fileset>
-        </path>
-
-        <path id="compile.classpath">
-            <fileset dir="build/lib">
-                <include name="**/*.jar" />
-            </fileset>
-            
-            <fileset dir="WebContent/WEB-INF/lib">
-                <include name="**/*.jar" />
-            </fileset>
-        </path>
 	</target>
 
-    <!-- Fetch repository changes -->
+	<!-- Fetch repository changes -->
 	<target name="svn-update" unless="eclipse.running">
 		<exec executable="svn">
 			<arg line="update" />
 		</exec>
 	</target>
 
-    <!-- ================================================================== -->
-    <!-- Source Preprocessing                                               -->
-    <!-- ================================================================== -->
+	<!-- ================================================================== -->
+	<!-- Source Preprocessing                                               -->
+	<!-- ================================================================== -->
 
-    <target name="preprocess-src" depends="init">
+	<target name="preprocess-src" depends="init">
 
-    	<property file="doc/java-license-header-${license.short.name}.properties" />
-    	
-        <mkdir dir="${result-path}/src" />
+		<property file="doc/java-license-header-${license.short.name}.properties" />
 
-    	<patternset id="preprocessable-files">
-    		<include name="**/*.java" />
-    		<include name="**/*.html" />
-    		<include name="**/*.css" />
-    		<include name="**/*.xml" />
+		<mkdir dir="${result-path}/src" />
+
+		<patternset id="preprocessable-files">
+			<include name="**/*.java" />
+			<include name="**/*.js" />
+			<include name="**/*.html" />
+			<include name="**/*.css" />
+			<include name="**/*.xml" />
 		</patternset>
 
-    	<patternset id="non-preprocessable-files">
-    		<include name="**/*.png" />
+		<patternset id="non-preprocessable-files">
+			<include name="**/*.png" />
 		</patternset>
-    	
-        <echo>Replacing @VERSION@ and @VaadinAddonLicenseForJavaFiles@ tags for java/html/css/xml files.</echo>
-        <copy todir="${result-path}/src" overwrite="yes">
-            <filterset id="versionfilter">
-                <filter token="VERSION" value="${version}" />
-            	<filter token="VaadinAddonLicenseForJavaFiles" value="${license.header.text}" />
-            </filterset>
 
-            <fileset dir="src">
-                <patternset refid="preprocessable-files" />
-            </fileset>
-        </copy>
+		<echo>Replacing @VERSION@ and @VaadinAddonLicenseForJavaFiles@ tags for java/html/css/xml files.</echo>
+		<copy todir="${result-path}/src" overwrite="yes">
+			<filterset id="versionfilter">
+				<filter token="VERSION" value="${version}" />
+				<filter token="VaadinAddonLicenseForJavaFiles" value="${license.header.text}" />
+			</filterset>
 
-        <!-- Copy any non-filtered files as well -->
-        <copy todir="${result-path}/src" overwrite="yes">
-            <fileset dir="src">
-                <patternset refid="non-preprocessable-files" />
-            </fileset>
-        </copy>
-    </target>
+			<fileset dir="src">
+				<patternset refid="preprocessable-files" />
+			</fileset>
+		</copy>
 
-    <!-- ================================================================== -->
-    <!-- Compilation                                                        -->
-    <!-- ================================================================== -->
+		<!-- Copy any non-filtered files as well -->
+		<copy todir="${result-path}/src" overwrite="yes">
+			<fileset dir="src">
+				<patternset refid="non-preprocessable-files" />
+			</fileset>
+		</copy>
+	</target>
 
-    <!-- Compile server-side Java -->
+	<!-- ================================================================== -->
+	<!-- Compilation                                                        -->
+	<!-- ================================================================== -->
+
+	<!-- Compile server-side Java -->
 	<target name="compile" depends="init, preprocess-src" unless="run.no-compile">
-        <property name="result.classes" value="${result-path}/war/WEB-INF/classes"/>
+		<property name="result.classes" value="${result-path}/war/WEB-INF/classes" />
 
-		<delete dir="${result.classes}" failonerror="false"/>
-        <mkdir dir="${result.classes}"/>
-        
+		<delete dir="${result.classes}" failonerror="false" />
+		<mkdir dir="${result.classes}" />
+
 		<!-- compile addon -->
-		<javac destdir="${result.classes}" target="1.5" source="1.5" debug="true"> 
+		<javac destdir="${result.classes}" target="1.5" source="1.5" debug="true">
 			<src path="${result-path}/src" />
-			<!--<src path="${test.src.base}" />
--->
 			<src path="${demo.src.base}" />
 			<include name="**/*.*" />
 
 			<classpath refid="test.classpath" />
-            <classpath refid="compile.classpath" />
+			<classpath refid="compile.classpath" />
 			<classpath>
 				<path path="${result-path}/src" />
 				<path path="test-src" />
@@ -150,149 +113,104 @@
 				<path path="${gwt.lib.dir}/gwt-user.jar" />
 			</classpath>
 		</javac>
-
 	</target>
 
-    <!-- Check if there are new modifications to widgetset sources -->
-	<target name="check-widgetset-uptodate">
-		<echo>Checking if widgetset needs to be rebuilt</echo>
-		<uptodate targetfile="WebContent/VAADIN/widgetsets/.widgetset" property="widgetset.uptodate">
-			<srcfiles dir="src" includes="**/gwt/**/*" />
-		</uptodate>
-	</target>
-
-    <!-- Refresh the project in a locally running Eclipse. -->
+	<!-- Refresh the project in a locally running Eclipse. -->
 	<target name="refresh-eclipse" if="eclipse.running">
 		<echo>Refreshing project folder</echo>
 		<eclipse.refreshLocal resource="${result-path}" depth="infinite" />
 	</target>
 
-    <!-- Compile client-side Java -->
-	<target name="widgetset" depends="init,check-widgetset-uptodate" unless="widgetset.uptodate, run.no-tests" if="demo.src.base">
-		<echo>Compiling widgetset</echo>
+	<!-- ================================================================== -->
+	<!-- Testing                                                            -->
+	<!-- ================================================================== -->
 
-		<java classname="com.vaadin.tools.WidgetsetCompiler" failonerror="yes" fork="yes" maxmemory="512m">
-			<arg value="-out" />
-			<arg value="WebContent/VAADIN/widgetsets" />
-			<arg value="${addon.widgetset}" />
-			<jvmarg value="-Xss1024k" />
-			<jvmarg value="-Xmx1024M" />
-			<jvmarg value="-Djava.awt.headless=true" />
-			<classpath>
-				<path path="${result-path}/src" />
-				<path path="${basedir}/${result-path}/war/WEB-INF/classes" />
-				<path path="WebContent/WEB-INF/classes" />
-				<fileset dir="build/lib">
-					<include name="**/vaadin*.jar" />
-				</fileset>
-				<fileset dir="build/lib/gwt">
-					<include name="**/gwt-*.jar" />
-					<include name="**/validation-api-*.jar" />
-				</fileset>
-				<fileset dir="${gwt.lib.dir}">
-					<include name="**/gwt-*.jar" />
-					<include name="**/validation-api-*.jar" />
-				</fileset>
-				<fileset dir="WebContent/WEB-INF/lib">
-					<include name="**/*.jar" />
-				</fileset>
-			</classpath>
-		</java>
+	<!-- ant contrib required for flow control (for loop, if, property override)   -->
+	<!-- Note that we have to use a namespace to avoid clash when running sub-ant. -->
+	<taskdef uri="antlib:net.sf.antcontrib" resource="net/sf/antcontrib/antlib.xml">
+		<classpath>
+			<pathelement location="build/lib/ant-contrib-1.0b3.jar" />
+		</classpath>
+	</taskdef>
 
-		<touch file="WebContent/VAADIN/widgetsets/.widgetset" verbose="true" />
+	<!-- Vaadin TestBench tests -->
+	<target name="testbench-tests" depends="init, demo.war" unless="tests.testbench.skip">
+		<!-- Parameters for the test.xml script. -->
+		<fail unless="com.vaadin.testbench.tester.host" message="The 'com.vaadin.testbench.tester.host' property must be defined." />
+		<fail unless="com.vaadin.testbench.deployment.url" message="The 'com.vaadin.testbench.deployment.url' property must be defined." />
+		<fail unless="com.vaadin.testbench.lib.dir" message="The 'com.vaadin.testbench.lib.dir' property must be defined." />
 
+		<fail unless="test-output-dir" message="The 'test-output-dir' property must be defined, it should be an absolute path." />
+
+		<property name="deploy.as.war" value="${addon.name}.war" />
+
+		<!-- Run the separate test script. -->
+		<ant antfile="tests/test.xml" target="test-package" inheritall="false" inheritrefs="true">
+			<property name="war.path" value="${war.path}" />
+			<property name="deploy.as.war" value="${deploy.as.war}" />
+
+			<property name="test-output-dir" value="${test-output-dir}" />
+
+			<property name="com.vaadin.testbench.tester.host" value="${com.vaadin.testbench.tester.host}" />
+			<property name="com.vaadin.testbench.deployment.url" value="${com.vaadin.testbench.deployment.url}" />
+			<property name="com.vaadin.testbench.lib.dir" value="${com.vaadin.testbench.lib.dir}" />
+		</ant>
 	</target>
 
-    <!-- ================================================================== -->
-    <!-- Testing                                                            -->
-    <!-- ================================================================== -->
-
-    <!-- ant contrib required for flow control (for loop, if, property override)   -->
-    <!-- Note that we have to use a namespace to avoid clash when running sub-ant. -->
-    <taskdef uri="antlib:net.sf.antcontrib" resource="net/sf/antcontrib/antlib.xml">
-        <classpath>
-            <pathelement location="build/lib/ant-contrib-1.0b3.jar" />
-        </classpath>
-    </taskdef>
-
-    <!-- Vaadin TestBench tests -->
-    <target name="testbench-tests" depends="init, demo.war" unless="tests.testbench.skip">
-        <!-- Parameters for the test.xml script. -->
-        <fail unless="com.vaadin.testbench.tester.host" message="The 'com.vaadin.testbench.tester.host' property must be defined."/>
-        <fail unless="com.vaadin.testbench.deployment.url" message="The 'com.vaadin.testbench.deployment.url' property must be defined."/>
-        <fail unless="com.vaadin.testbench.lib.dir" message="The 'com.vaadin.testbench.lib.dir' property must be defined."/>
-
-        <fail unless="test-output-dir" message="The 'test-output-dir' property must be defined, it should be an absolute path." />
-
-        <property name="deploy.as.war" value="${addon.name}.war"/>
-
-        <!-- Run the separate test script. -->
-        <ant antfile="tests/test.xml" target="test-package" inheritall="false" inheritrefs="true">
-            <property name="war.path" value="${war.path}"/>
-            <property name="deploy.as.war" value="${deploy.as.war}"/>
-
-            <property name="test-output-dir" value="${test-output-dir}"/>
-
-            <property name="com.vaadin.testbench.tester.host" value="${com.vaadin.testbench.tester.host}"/>
-            <property name="com.vaadin.testbench.deployment.url" value="${com.vaadin.testbench.deployment.url}"/>
-            <property name="com.vaadin.testbench.lib.dir" value="${com.vaadin.testbench.lib.dir}"/>
-        </ant>
-    </target>
-
-    <!-- Server-side JUnit tests -->
+	<!-- Server-side JUnit tests -->
 	<target name="serverside-tests" depends="compile" if="test.src.base">
-        <echo>Running JUnit tests in ${test.src.base}/${test.src.dir}</echo>
+		<echo>Running JUnit tests in ${test.src.base}/${test.src.dir}</echo>
 
-        <echo>Test source base: ${test.src.base}</echo>
-        <echo>Test source dir:  ${test.src.dir}</echo>
+		<echo>Test source base: ${test.src.base}</echo>
+		<echo>Test source dir:  ${test.src.dir}</echo>
 
-		<junit printsummary="yes" showoutput="true"> 
+		<junit printsummary="yes" showoutput="true">
 			<classpath>
 				<pathelement path="${result.classes}" />
-				<path refid="compile.classpath"/>
-                <path refid="test.classpath"/>
+				<path refid="compile.classpath" />
+				<path refid="test.classpath" />
 			</classpath>
 
 			<batchtest fork="yes">
-				<fileset dir="${test.src.base}" includes="${test.src.dir}/**/*.java"/>
+				<fileset dir="${test.src.base}" includes="${test.src.dir}/**/*.java" />
 			</batchtest>
 		</junit>
-    </target>
+	</target>
 
-    <target name="tests" depends="serverside-tests" unless="run.no-tests" if="test.src.base"/>
+	<target name="tests" depends="serverside-tests" unless="run.no-tests" if="test.src.base" />
 
-    <!-- ================================================================== -->
-    <!-- Documentation                                                      -->
-    <!-- ================================================================== -->
+	<!-- ================================================================== -->
+	<!-- Documentation                                                      -->
+	<!-- ================================================================== -->
 
-    <!-- Manual -->
-    <target name="manual" if="manual.odt">
-        <!-- Must delete the old version or conversion fails -->
-        <delete file="${manual.pdf}"/>
+	<!-- Manual -->
+	<target name="manual" if="manual.odt">
+		<!-- Must delete the old version or conversion fails -->
+		<delete file="${manual.pdf}" />
 
-        <!-- Start OpenOffice service -->
-        <exec executable="python" searchpath="true" failonerror="true" >
-            <arg value="build/odf-converter.py"/>
-            <arg value="start"/>
-        </exec>
+		<!-- Start OpenOffice service -->
+		<exec executable="python" searchpath="true" failonerror="true">
+			<arg value="build/odf-converter.py" />
+			<arg value="start" />
+		</exec>
 
-        <!-- Convert the ODF text document to PDF -->
-        <java jar="build/lib/jodconverter/jodconverter-cli-2.2.2.jar" fork="true">
-            <arg value="${manual.odt}"/>
-            <arg value="${manual.pdf}"/>
-        </java>
+		<!-- Convert the ODF text document to PDF -->
+		<java jar="build/lib/jodconverter/jodconverter-cli-2.2.2.jar" fork="true">
+			<arg value="${manual.odt}" />
+			<arg value="${manual.pdf}" />
+		</java>
 
-        <!-- Stop OpenOffice service -->
-        <exec executable="python" searchpath="true" failonerror="true" >
-            <arg value="build/odf-converter.py"/>
-            <arg value="stop"/>
-        </exec>
-    </target>
+		<!-- Stop OpenOffice service -->
+		<exec executable="python" searchpath="true" failonerror="true">
+			<arg value="build/odf-converter.py" />
+			<arg value="stop" />
+		</exec>
+	</target>
 
 	<target name="javadoc" depends="init, preprocess-src">
 		<javadoc sourcepath="${result-path}/src/${src.package.dir}" destdir="${javadoc.dir}" public="true">
 			<classpath>
-				<path refid="compile.classpath"/>
+				<path refid="compile.classpath" />
 			</classpath>
 			<fileset dir="${result-path}/src/${src.package.dir}">
 				<include name="**" />
@@ -303,105 +221,100 @@
 			</fileset>
 		</javadoc>
 	</target>
-	
-    <!-- ================================================================== -->
-    <!-- Packaging                                                          -->
-    <!-- ================================================================== -->
 
-    <!-- Create the JAR package. -->
-    <target name="package-jar" depends="compile" unless="run.no-package-jar">
+	<!-- ================================================================== -->
+	<!-- Packaging                                                          -->
+	<!-- ================================================================== -->
 
-        <jar jarfile="${jar.path}" compress="true">
-            <manifest>
-                <attribute name="Vaadin-Package-Version" value="1" />
-                <attribute name="Vaadin-Widgetsets" value="${addon.widgetset}" />
-                <attribute name="Implementation-Title" value="${addon.title}" />
-                <attribute name="Implementation-Version" value="${version}" />
-                <attribute name="Implementation-Vendor" value="${addon.vendor}" />
-            </manifest>
-        	
-        	<!-- The built server-side classes and the widget set class are here. -->
-            <fileset dir="${result.classes}">
-                <patternset>
-                    <include name="${src.package.dir}/**/*" />
-                	<exclude name="**/test/**" />
-                	<exclude name="**/demo/**" />
-                </patternset>
-            </fileset> 
+	<!-- Create the JAR package. -->
+	<target name="package-jar" depends="compile" unless="run.no-package-jar">
 
-        	<!-- Especially all the widget set source files are required. -->
-        	<fileset dir="${result-path}/src">
-                <patternset>
-                	<include name="${src.package.dir}/**/*" />
-                	<exclude name="**/demo/**" />
-                	<exclude name="**/test/**" />
-                </patternset>
-            </fileset>
-        	
-        </jar>
-	</target>		
+		<jar jarfile="${jar.path}" compress="true">
+			<manifest>
+				<attribute name="Vaadin-Package-Version" value="1" />
+				<attribute name="Implementation-Title" value="${addon.title}" />
+				<attribute name="Implementation-Version" value="${version}" />
+				<attribute name="Implementation-Vendor" value="${addon.vendor}" />
+			</manifest>
 
-    <!-- Create the ZIP distribution package. -->
-    <target name="package-zip" depends="package-jar, javadoc, manual, demo.war" unless="run.no-package-jar">
-        <property name="zip.name" value="${result-path}/${addon.filename}.zip"/>
+			<!-- The built server-side classes and the widget set class are here. -->
+			<fileset dir="${result.classes}">
+				<patternset>
+					<include name="${src.package.dir}/**/*" />
+					<exclude name="**/test/**" />
+					<exclude name="**/demo/**" />
+				</patternset>
+			</fileset>
 
-    	<!-- Make the zip manifest -->
-    	<mkdir dir="${result-path}/META-INF"/>
-    	<echo file="${result-path}/META-INF/MANIFEST.MF">Vaadin-Addon: ${jar.name}
+			<!-- Especially all the widget set source files are required. -->
+			<fileset dir="${result-path}/src">
+				<patternset>
+					<include name="${src.package.dir}/**/*" />
+					<exclude name="**/demo/**" />
+					<exclude name="**/test/**" />
+				</patternset>
+			</fileset>
+
+		</jar>
+	</target>
+
+	<!-- Create the ZIP distribution package. -->
+	<target name="package-zip" depends="package-jar, javadoc, manual, demo.war" unless="run.no-package-jar">
+		<property name="zip.name" value="${result-path}/${addon.filename}.zip" />
+
+		<!-- Make the zip manifest -->
+		<mkdir dir="${result-path}/META-INF" />
+		<echo file="${result-path}/META-INF/MANIFEST.MF">Vaadin-Addon: ${jar.name}
 Vaadin-Package-Version: 1
 Implementation-Title: ${addon.title}
 Implementation-Version: ${version}
 Implementation-Vendor: ${addon.vendor}
-       </echo>         
-    	        	
-        <echo>Packaging ${zip.name}</echo>
+       </echo>
 
-<!--   		<zipfileset id="manual_fileset" file="${manual.pdf}"/>-->
+		<echo>Packaging ${zip.name}</echo>
 
-        <zip destfile="${zip.name}">
-        	<zipfileset dir="${result-path}" includes="META-INF/MANIFEST.MF" />
+		<!--   		<zipfileset id="manual_fileset" file="${manual.pdf}"/>-->
 
-            <!-- The add-on library itself -->
-            <zipfileset prefix="" file="${result-path}/${jar.name}" />
-        	
-        	<!-- demo war -->
-            <zipfileset prefix="" file="${war.path}" />
+		<zip destfile="${zip.name}">
+			<zipfileset dir="${result-path}" includes="META-INF/MANIFEST.MF" />
 
-            <!-- Documentation -->
-        	<!--<zipfileset prefix="doc" refid="manual_fileset"/>-->
-        	
-            <zipfileset prefix="doc/api" dir="${javadoc.dir}" />
-            <zipfileset prefix="doc" dir="doc">
-                <patternset>
-                    <include name="README.TXT" />
-                    <include name="license-${license.short.name}.txt" />
-                </patternset>
-            </zipfileset>
-            <zipfileset file="doc/licensing-${license.short.name}.txt" fullpath="doc/licensing.txt" />
-        </zip>
+			<!-- The add-on library itself -->
+			<zipfileset prefix="" file="${result-path}/${jar.name}" />
 
-    </target>
+			<!-- demo war -->
+			<zipfileset prefix="" file="${war.path}" />
+
+			<!-- Documentation -->
+			<!--<zipfileset prefix="doc" refid="manual_fileset"/>-->
+
+			<zipfileset prefix="doc/api" dir="${javadoc.dir}" />
+			<zipfileset prefix="doc" dir="doc">
+				<patternset>
+					<include name="README.TXT" />
+					<include name="license-${license.short.name}.txt" />
+				</patternset>
+			</zipfileset>
+			<zipfileset file="doc/licensing-${license.short.name}.txt" fullpath="doc/licensing.txt" />
+		</zip>
+
+	</target>
 
 	<target name="demo.war" depends="javadoc, package-jar" if="demo.src.base">
-        <property name="war.path" value="${result-path}/${addon.filename}-demo.war"/>
+		<property name="war.path" value="${result-path}/${addon.filename}-demo.war" />
 
-        <echo>Building WAR</echo>
-        <echo>WAR Target Path: ${war.path}</echo>
+		<echo>Building WAR</echo>
+		<echo>WAR Target Path: ${war.path}</echo>
 
 		<!-- Additional package with the Base64 encoder/decoder -->
-        <!-- Please notice the use of include pattern -->
-		<property name="demo.packages" value="${demo.package}/**,biz.source_code.base64Coder/**"/>
-        <echo>Demo packages path: ${demo.packages}</echo>
-		<antcontrib:propertyregex property="demo.classes.path"
-		              input="${demo.packages}"
-		              regexp="\."
-		              replace="/"
-		              casesensitive="false" />
-        <echo>Included class path: ${demo.classes.path}</echo>
+		<!-- Please notice the use of include pattern -->
+		<property name="demo.packages" value="${demo.package}/**,biz.source_code.base64Coder/**" />
+		<echo>Demo packages path: ${demo.packages}</echo>
+		<antcontrib:propertyregex property="demo.classes.path" input="${demo.packages}" regexp="\." replace="/" casesensitive="false" />
+		<echo>Included class path: ${demo.classes.path}</echo>
 
 		<war destfile="${war.path}" needxmlfile="false">
-			<classes dir="${result.classes}" includes="${demo.classes.path}"/>
-			<fileset dir="WebContent" >
+			<classes dir="${result.classes}" includes="${demo.classes.path}" />
+			<fileset dir="WebContent">
 				<patternset>
 					<include name="*.jsp" />
 					<include name="WEB-INF/**" />
@@ -410,7 +323,7 @@ Implementation-Vendor: ${addon.vendor}
 			</fileset>
 		</war>
 	</target>
-	
+
 </project>
 
 <!-- Keep this comment at the end of the file

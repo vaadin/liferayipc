@@ -10,11 +10,11 @@
 		<portlet-name>sender</portlet-name>
 		<display-name>Vaadin IPC for Liferay demo - Sender</display-name>
 		<portlet-class>
-			com.vaadin.terminal.gwt.server.ApplicationPortlet2
+			com.vaadin.server.VaadinPortlet
 		</portlet-class>
 		<init-param>
-			<name>application</name>
-			<value>com.vaadin.addon.ipcforliferay.demo.sender.SenderApplication</value>
+			<name>UI</name>
+			<value>com.vaadin.addon.ipcforliferay.demo.sender.SenderUI</value>
 		</init-param>
 		<expiration-cache>0</expiration-cache>
 		<supports>
@@ -43,12 +43,12 @@
 		<portlet-name>receiver</portlet-name>
 		<display-name>Vaadin IPC for Liferay demo - Receiver</display-name>
 		<portlet-class>
-			com.vaadin.terminal.gwt.server.ApplicationPortlet2
+			com.vaadin.server.VaadinPortlet
 		</portlet-class>
 		<init-param>
-			<name>application</name>
+			<name>UI</name>
 			<value>
-				com.vaadin.addon.ipcforliferay.demo.receiver.ReceiverApplication
+				com.vaadin.addon.ipcforliferay.demo.receiver.ReceiverUI
 			</value>
 		</init-param>
 		<expiration-cache>0</expiration-cache>
@@ -78,12 +78,12 @@
         <portlet-name>sessionreceiver</portlet-name>
         <display-name>Vaadin IPC for Liferay demo - Shared Session Receiver</display-name>
         <portlet-class>
-            com.vaadin.terminal.gwt.server.ApplicationPortlet2
+            com.vaadin.server.VaadinPortlet
         </portlet-class>
         <init-param>
-            <name>application</name>
+            <name>UI</name>
             <value>
-                com.vaadin.addon.ipcforliferay.demo.sessionreceiver.SessionReceiverApplication
+                com.vaadin.addon.ipcforliferay.demo.sessionreceiver.SessionReceiverUI
             </value>
         </init-param>
         <expiration-cache>0</expiration-cache>
