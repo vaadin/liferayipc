@@ -9,6 +9,7 @@
 	<configurations>
 		<!-- The default configuration, which should be deployed to the server -->
 		<conf name="default" />
+		<conf name="test" extends="default" />
 	</configurations>
 	<dependencies>
 		<!-- The core server part of Vaadin -->
