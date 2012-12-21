@@ -58,7 +58,8 @@ public class LiferayIPC extends AbstractJavaScriptExtension {
      *            event identifier whose events to listen to
      * @param listener
      */
-    public void addListener(String eventId, LiferayIPCEventListener listener) {
+    public void addLiferayIPCEventListener(String eventId,
+            LiferayIPCEventListener listener) {
         List<LiferayIPCEventListener> listeners = eventListeners.get(eventId);
         if (listeners == null) {
             listeners = new ArrayList<LiferayIPCEventListener>();
@@ -66,6 +67,23 @@ public class LiferayIPC extends AbstractJavaScriptExtension {
             getState().eventIdsListenedTo.add(eventId);
         }
         listeners.add(listener);
+    }
+
+    /**
+     * Adds a listener for Liferay client-side inter-portlet communication.
+     * Portlets can send messages (strings) to other Vaadin and non-Vaadin
+     * portlets on the same page that listen to the same event ID.
+     * 
+     * @param eventId
+     *            event identifier whose events to listen to
+     * @param listener
+     * @deprecated Use
+     *             {@link #addLiferayIPCEventListener(String, LiferayIPCEventListener)}
+     *             instead.
+     */
+    @Deprecated
+    public void addListener(String eventId, LiferayIPCEventListener listener) {
+        addLiferayIPCEventListener(eventId, listener);
     }
 
     @Override
@@ -79,8 +97,25 @@ public class LiferayIPC extends AbstractJavaScriptExtension {
      * @param eventId
      *            event identifier whose events to listen to
      * @param listener
+     * @deprecated Use
+     *             {@link #removeLiferayIPCEventListener(String, LiferayIPCEventListener)}
+     *             instead.
      */
+    @Deprecated
     public void removeListener(String eventId, LiferayIPCEventListener listener) {
+        removeLiferayIPCEventListener(eventId, listener);
+    }
+
+    /**
+     * Removes a listener for Liferay client-side inter-portlet communication.
+     * 
+     * @param eventId
+     *            The event identifier whose events to listen to
+     * @param listener
+     *            The listener to remove
+     */
+    public void removeLiferayIPCEventListener(String eventId,
+            LiferayIPCEventListener listener) {
         List<LiferayIPCEventListener> listeners = eventListeners.get(eventId);
         if (listeners != null) {
             listeners.remove(listener);
