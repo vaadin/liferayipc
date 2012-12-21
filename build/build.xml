@@ -54,6 +54,7 @@
 		<property file="doc/java-license-header-${license.short.name}.properties" />
 
 		<mkdir dir="${result-path}/src" />
+		<mkdir dir="${result-path}/WebContent-demo" />
 
 		<patternset id="preprocessable-files">
 			<include name="**/*.java" />
@@ -76,6 +77,15 @@
 
 			<fileset dir="src">
 				<patternset refid="preprocessable-files" />
+			</fileset>
+		</copy>
+		<copy todir="${result-path}/WebContent-demo" overwrite="yes">
+			<filterset id="versionfilter">
+				<filter token="VERSION" value="${version}" />
+				<filter token="VaadinAddonLicenseForJavaFiles" value="${license.header.text}" />
+			</filterset>
+			<fileset dir="WebContent">
+				<include name="WEB-INF/*.properties" />
 			</fileset>
 		</copy>
 
@@ -319,7 +329,11 @@ Implementation-Vendor: ${addon.vendor}
 					<include name="*.jsp" />
 					<include name="WEB-INF/**" />
 					<exclude name="WEB-INF/lib/**" />
+					<exclude name="WEB-INF/*.properties" />
 				</patternset>
+			</fileset>
+			<fileset dir="${result-path}/WebContent-demo">
+				<include name="WEB-INF/*.properties" />
 			</fileset>
 		</war>
 	</target>
