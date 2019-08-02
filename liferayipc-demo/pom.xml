@@ -45,7 +45,7 @@
     <repositories>
         <repository>
             <id>vaadin-addons</id>
-            <url>http://maven.vaadin.com/vaadin-addons</url>
+            <url>https://maven.vaadin.com/vaadin-addons</url>
         </repository>
         <repository>
             <id>liferay-releases</id>
@@ -55,7 +55,7 @@
     <pluginRepositories>
         <pluginRepository>
             <id>liferay-releases-plugins</id>
-            <url>http://repository.liferay.com/nexus/content/repositories/liferay-releases-ce/</url>
+            <url>https://repository.liferay.com/nexus/content/repositories/liferay-releases-ce/</url>
         </pluginRepository>
     </pluginRepositories>
 
